@@ -1,0 +1,15 @@
+data:
+    input: aneurist_is.csv
+    output: aneurist_is_processed.csv
+encoding:
+    one_hot_cols:
+        - PHASES_Population
+        - PHASES_Location
+        - FullLocation
+    orders:
+        Hypertension: ["No", "Yes - Treated and Controlled", "Yes - Not Treated"]
+        Smoking: ["No", "Yes: quit smoking", "Yes: still smoking"]
+        ruptureStatus: ["Unruptured", "Ruptured"]
+feature_selection:
+    manual_features: [PHASES_Population, Hypertension, Smoking, Age, Size, EarlierSAH, PHASES_Location, ruptureStatus,Gender]
+

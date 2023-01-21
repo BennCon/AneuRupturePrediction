@@ -1,0 +1,25 @@
+data:
+    input: data/aneurist_is.csv
+    output:
+        train: data/output/aneurist_is_train.csv
+        test: data/output/aneurist_is_test.csv
+
+encoding:
+    one_hot_cols: [PHASES_Population, PHASES_Location, patEthnicityRAW, LocationDDS, 
+                FullLocation, AneuType, AneuAspect, FlowTypeCOMPUTED ]
+    orders:
+        Hypertension: ["No", "Yes - Treated and Controlled", "Yes - Not Treated"]
+        Smoking: ["No", "Yes: quit smoking", "Yes: still smoking"]
+        ruptureStatus: ["Unruptured", "Ruptured"]
+        EarlierSAH: ["No", "Yes"]
+        sideDDS: [left, midline, right]
+        FlowStabilityCOMPUTED: [unstable, stable]
+
+feature_selection:
+    method: "correlation"
+    methods:
+        manual:
+            features: [PHASES_Population, Hypertension, Smoking, Age, Size, EarlierSAH, PHASES_Location, ruptureStatus,Gender]
+        correlation:
+            threshold: 0.4
+

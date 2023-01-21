@@ -14,14 +14,14 @@ def encode(df, one_hot_cols, orders={}):
         e.g. {"col_name": ["low", "medium", "high"]}
     :return: Encoded dataframe
     """
-    cols = detect_non_numeric()[0]
+    cols = detect_non_numeric(df)[0]
     for col in cols:
         if col in one_hot_cols:
-            df = one_hot(col)
+            df = one_hot(df, col)
         elif col in orders:
-            df = encode_ordinal(col, orders[col])
+            df = encode_ordinal(df,col, orders[col])
         else:
-            df = encode_ordinal(col)
+            df = encode_ordinal(df, col)
     
     return df
         
