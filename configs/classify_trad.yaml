@@ -1,0 +1,16 @@
+data:
+  input:
+    train: data/output/aneurist_trad_train.csv
+    test: data/output/aneurist_trad_test.csv
+  output: data/output/aneurist_trad_classify.csv
+classifier: logisticRegression
+classifiers:
+  kNN:
+    params:
+      k: 3
+  logisticRegression:
+    params:
+      C: 1.0
+      max_iter: 100
+      solver: liblinear
+
