@@ -1,33 +1,19 @@
 import numpy as np
 
 
-def select(df, config, return_cols=False):
-    """
-    If return _cols is True, returns the columns to be retained,
-    otherwise returns the modified dataframe
-    """
+def select(df, config, return_cols=True):
     method = config['method']
-    modified_df = None
-    method_config = config['methods'][method]
+    params = config['methods'][method]
     if method == 'manual':
-        modified_df = manual_select(df, method_config['features'])
+        retain_cols = params['features']
     elif method == 'correlation':
-        modified_df = corr_select(df, method_config['threshold'])
-    else:
-        raise Exception('Feature selection method not supported')
-    
+        retain_cols = corr_select(df, params['threshold'])
+
     if return_cols:
-        return modified_df.columns
+        return retain_cols
     else:
-        return modified_df
+        return df[retain_cols]
 
-
-
-def manual_select(df, features):
-    """
-    Select features manually
-    """
-    return df[features]
 
 #Select features by correlation, don't remove the target
 def corr_select(df, threshold):
@@ -39,6 +25,6 @@ def corr_select(df, threshold):
     upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(np.bool))
     
     to_drop = [column for column in upper.columns if any(upper[column] > threshold) and column != "ruptureStatus"]
-    return df.drop(to_drop, axis=1)
+    return [col for col in df.columns if col not in to_drop]
 
 
