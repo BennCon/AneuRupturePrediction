@@ -34,26 +34,41 @@ def main():
     
     #Split data - TEMPORARILY doing this after imputation and encoding
     #TODO: find solution where one hot encoding doesn't leave columns in test but not in train (or vice versa)
-    # test_size, random_state = itemgetter('test_size', 'random_state')(config["split"])
-    # test, train = train_test_split(df, test_size=test_size, random_state=random_state)
-
-    #Imputation (for now complete case analysis)
-    # train = impute.complete_case(train)
-    # test = impute.complete_case(test)
-
-    # #Encode
-    # one_hot_cols, orders = itemgetter('one_hot_cols', 'orders')(config['encoding'])
-    # train = encode.encode(train, one_hot_cols, orders)
-    # test = encode.encode(test, one_hot_cols, orders)
-
-    df=impute.complete_case(df)
-    one_hot_cols, orders = itemgetter('one_hot_cols', 'orders')(config['encoding'])
-    df=encode.encode(df, one_hot_cols, orders)
-
-    #Split data - TEMPORARILY doing this after imputation and encoding
-    #TODO: find solution where one hot encoding doesn't leave columns in test but not in train (or vice versa)
     test_size, random_state = itemgetter('test_size', 'random_state')(config["split"])
     test, train = train_test_split(df, test_size=test_size, random_state=random_state)
+
+    # #Remove outliers
+    # train = impute.remove_outliers(train)
+    # test = impute.remove_outliers(test)
+
+
+    #Imputation 
+    train_avgs = impute.get_data_avg(train)
+    train = impute.impute_data(train, train_avgs)
+    test = impute.impute_data(test, train_avgs)
+    
+
+
+    #Encode
+    one_hot_cols, orders = itemgetter('one_hot_cols', 'orders')(config['encoding'])
+    train = encode.encode(train, one_hot_cols, orders)
+    test = encode.encode(test, one_hot_cols, orders)
+
+    #Intuition: any columns not in both were added by one hot encoding, so add them to the other, and fill with 0
+    #Columns in test but not in train:
+    test_dif = (set(test.columns) - set(train.columns))
+    for col in test_dif:
+        train[col] = 0
+    #Columns in train but not in test:
+    train_dif = (set(train.columns) - set(test.columns))
+    for col in train_dif:
+        test[col] = 0
+
+    
+
+    # df=impute.complete_case(df)
+    # one_hot_cols, orders = itemgetter('one_hot_cols', 'orders')(config['encoding'])
+    # df=encode.encode(df, one_hot_cols, orders)
 
 
     #Feature selection
@@ -69,8 +84,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
