@@ -1,8 +1,18 @@
 import numpy as np
 from scipy import stats
 
-def impute():
-    return complete_case()
+def router(train, test, config):
+    method = config["method"]
+    if method == "complete_case":
+        train = complete_case(train)
+        test = complete_case(test)
+    elif method == "avg":
+        train_avgs = get_data_avg(train)
+        train = impute_data(train, train_avgs)
+        test = impute_data(test, train_avgs)
+
+    return train, test
+
 
 def complete_case(df):
     """
@@ -13,21 +23,6 @@ def complete_case(df):
     df = df.dropna()
     return df
 
-#Average imputation
-def average_impute(df):
-    """
-    Impute missing values with the mean/mode
-    :param df: Dataframe
-    :return: Dataframe with imputed values
-    """
-    for col in df.columns:
-        #if numeric
-        if df[col].dtype == 'float64' or df[col].dtype == 'int64':
-            df[col].fillna(df[col].mean(), inplace=True)
-        #if categorical
-        elif df[col].dtype == 'object':
-            df[col].fillna(df[col].mode()[0], inplace=True)
-    return df
 
 def get_data_avg(df):
     """
@@ -56,7 +51,7 @@ def impute_data(df, avg):
         df[col].fillna(avg[col], inplace=True)
     return df
 
-def remove_outliers(df):
+def remove_outliers(df, threshold):
     """
     Remove outliers from data, replacing them with n/a
     :param df: Dataframe
@@ -68,7 +63,7 @@ def remove_outliers(df):
             std = np.std(df[col])
             
             z_scores = (df[col] - mean) / std
-            outliers = df[np.abs(z_scores) > 3]
+            outliers = df[np.abs(z_scores) > threshold]
             outlier_indices = outliers.index
 
             df.loc[outlier_indices, col] = np.nan

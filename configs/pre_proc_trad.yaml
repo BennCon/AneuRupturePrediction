@@ -6,17 +6,24 @@ data:
 split:
     test_size: 0.2
     random_state: 42
+
+outlier_z:  #Remove to disable outlier removal
+
+imputation:
+    method: "complete_case"
+
 encoding:
     one_hot_cols: [PHASES_Population, PHASES_Location, FullLocation]
     orders:
         Hypertension: ["No", "Yes - Treated and Controlled", "Yes - Not Treated"]
         Smoking: ["No", "Yes: quit smoking", "Yes: still smoking"]
         ruptureStatus: ["Unruptured", "Ruptured"]
+
 feature_selection:
     method: "correlation"
     methods:
         manual:
             features: [PHASES_Population, Hypertension, Smoking, Age, Size, EarlierSAH, PHASES_Location, ruptureStatus,Gender]
         correlation:
-            threshold: 0.4
+            threshold: 0.45
 

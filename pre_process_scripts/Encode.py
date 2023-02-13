@@ -73,3 +73,22 @@ def one_hot(df, col_name):
     df = pd.get_dummies(df, columns=[col_name])
     return df
 
+def onehot_align(df1, df2):
+    """
+    For a split dataset that has been one-hot encoded
+    Corrects such that both dataframes have the same columns
+    Intuition: any columns not in both were added by one hot encoding, 
+        so add them to the other, and fill with 0
+    :param df1: Dataframe
+    :param df2: Dataframe
+    :return: (Corrected df1, corrected df2)
+    """
+    df1_cols = set(df1.columns)
+    df2_cols = set(df2.columns)
+    for col in df1_cols:
+        if col not in df2_cols:
+            df2[col] = 0
+    for col in df2_cols:
+        if col not in df1_cols:
+            df1[col] = 0
+    return df1, df2

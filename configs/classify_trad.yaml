@@ -10,7 +10,7 @@ classifiers:
       k: 3
   logisticRegression:
     params:
-      C: 1.0
-      max_iter: 100
+      C: 3
+      max_iter: 1000
       solver: liblinear
 

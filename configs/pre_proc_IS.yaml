@@ -6,6 +6,12 @@ data:
 split:
     test_size: 0.2
     random_state: 42
+
+outlier_z: 5 #Remove number to disable outlier removal 
+
+imputation:
+    method: "avg"
+
 encoding:
     one_hot_cols: [PHASES_Population, PHASES_Location, patEthnicityRAW, LocationDDS, 
                 FullLocation, AneuType, AneuAspect, FlowTypeCOMPUTED ]
@@ -23,5 +29,5 @@ feature_selection:
         manual:
             features: [PHASES_Population, Hypertension, Smoking, Age, Size, EarlierSAH, PHASES_Location, ruptureStatus,Gender]
         correlation:
-            threshold: 0.4
+            threshold: 0.45
 

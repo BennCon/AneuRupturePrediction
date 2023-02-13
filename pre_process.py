@@ -32,49 +32,27 @@ def main():
     if "ID4Sasan" in df.columns:
         df.drop("ID4Sasan", axis=1, inplace=True)
     
-    #Split data - TEMPORARILY doing this after imputation and encoding
-    #TODO: find solution where one hot encoding doesn't leave columns in test but not in train (or vice versa)
+    #Split data
     test_size, random_state = itemgetter('test_size', 'random_state')(config["split"])
-    test, train = train_test_split(df, test_size=test_size, random_state=random_state)
+    train, test = train_test_split(df, test_size=test_size, random_state=random_state)
 
-    # #Remove outliers
-    # train = impute.remove_outliers(train)
-    # test = impute.remove_outliers(test)
+    #Remove outliers
+    outlier_z = config["outlier_z"]
+    if outlier_z is not None:
+        train = impute.remove_outliers(train, outlier_z)
+        test = impute.remove_outliers(test, outlier_z)
 
-
-    #Imputation 
-    train_avgs = impute.get_data_avg(train)
-    train = impute.impute_data(train, train_avgs)
-    test = impute.impute_data(test, train_avgs)
-    
-
+    #Imputation
+    train, test = impute.router(train, test, config['imputation'])
 
     #Encode
     one_hot_cols, orders = itemgetter('one_hot_cols', 'orders')(config['encoding'])
     train = encode.encode(train, one_hot_cols, orders)
     test = encode.encode(test, one_hot_cols, orders)
-
-    #Intuition: any columns not in both were added by one hot encoding, so add them to the other, and fill with 0
-    #Columns in test but not in train:
-    test_dif = (set(test.columns) - set(train.columns))
-    for col in test_dif:
-        train[col] = 0
-    #Columns in train but not in test:
-    train_dif = (set(train.columns) - set(test.columns))
-    for col in train_dif:
-        test[col] = 0
-
-    
-
-    # df=impute.complete_case(df)
-    # one_hot_cols, orders = itemgetter('one_hot_cols', 'orders')(config['encoding'])
-    # df=encode.encode(df, one_hot_cols, orders)
-
+    train, test = encode.onehot_align(train, test)
 
     #Feature selection
-    retain_cols = feature_selection.select(train, config['feature_selection'])
-    train = train[retain_cols]
-    test = test[retain_cols]
+    train, test = feature_selection.router(train, test, config['feature_selection'])
 
     #Output data
     if config["data"]["output"] is not None:
