@@ -33,7 +33,7 @@ def main():
 
     #Train model
     classifier = config['classifier']
-    params = config['classifiers'][classifier]['params']
+    params = config['classifiers'][classifier]
 
     if classifier == 'kNN':
         model = knn.train(x_train, y_train, params)

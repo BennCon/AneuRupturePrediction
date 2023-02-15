@@ -3,14 +3,14 @@ data:
     train: data/output/aneurist_is_train.csv
     test: data/output/aneurist_is_test.csv
   output: data/output/aneurist_is_classify.csv
+
 classifier: logisticRegression
+
 classifiers:
   kNN:
-    params:
-      k: 3
+    k: 3
   logisticRegression:
-    params:
-      C: 3
-      max_iter: 1000
-      solver: liblinear
+    C: 3
+    max_iter: 1000
+    solver: liblinear
 

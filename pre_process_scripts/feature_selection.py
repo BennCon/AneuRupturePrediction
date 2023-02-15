@@ -2,12 +2,14 @@ import numpy as np
 
 def router(train, test, config):
     method = config['method']
-    method_config = config['methods'][method] 
-    
-    if method == 'manual':
-        retain_cols = method_config['features']
-    elif method == 'correlation':
-        retain_cols = corr_select(train, method_config['threshold'])
+    if method == None:
+        retain_cols = train.columns
+    else: 
+        method_config = config['methods'][method] 
+        if method == 'manual':
+            retain_cols = method_config['features']
+        elif method == 'correlation':
+            retain_cols = corr_select(train, method_config['threshold'])
         
     return train[retain_cols], test[retain_cols]
 

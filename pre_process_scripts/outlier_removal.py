@@ -8,7 +8,6 @@ def router(train, test, config):
 
     method_config = config["methods"][method]
     if method == 'z_score':
-        print("Removing outliers using z-score")
         threshold = method_config['threshold']
         means, stds = calc_stats(train)
         train = z_removal(train, means, stds, threshold)
