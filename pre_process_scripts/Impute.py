@@ -51,25 +51,6 @@ def impute_data(df, avg):
         df[col].fillna(avg[col], inplace=True)
     return df
 
-def remove_outliers(df, threshold):
-    """
-    Remove outliers from data, replacing them with n/a
-    :param df: Dataframe
-    :return: Dataframe with outliers removed
-    """
-    for col in df.columns:
-        if df[col].dtype == 'float64' or df[col].dtype == 'int64':
-            mean = np.mean(df[col])
-            std = np.std(df[col])
-            
-            z_scores = (df[col] - mean) / std
-            outliers = df[np.abs(z_scores) > threshold]
-            outlier_indices = outliers.index
-
-            df.loc[outlier_indices, col] = np.nan
-    
-    return df
-
 
     
     

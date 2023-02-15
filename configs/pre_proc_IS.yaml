@@ -7,7 +7,11 @@ split:
     test_size: 0.2
     random_state: 42
 
-outlier_z: 5 #Remove number to disable outlier removal 
+outlier_removal:
+    method: "z_score"
+    methods:
+        z_score:
+            threshold: 5 #Remove number to disable outlier removal 
 
 imputation:
     method: "avg"

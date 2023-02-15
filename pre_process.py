@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 
 import pre_process_scripts.encode as encode
 import pre_process_scripts.impute as impute
+import pre_process_scripts.outlier_removal as outlier_removal
 import pre_process_scripts.feature_selection as feature_selection
 
 #Load config file path from command line
@@ -37,10 +38,7 @@ def main():
     train, test = train_test_split(df, test_size=test_size, random_state=random_state)
 
     #Remove outliers
-    outlier_z = config["outlier_z"]
-    if outlier_z is not None:
-        train = impute.remove_outliers(train, outlier_z)
-        test = impute.remove_outliers(test, outlier_z)
+    train, test = outlier_removal.router(train, test, config['outlier_removal'])
 
     #Imputation
     train, test = impute.router(train, test, config['imputation'])
