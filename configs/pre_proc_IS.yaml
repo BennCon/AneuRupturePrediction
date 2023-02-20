@@ -11,8 +11,8 @@ outlier_removal:
     method: "z_score"
     methods:
         z_score:
-            threshold: 5 #Remove number to disable outlier removal 
-
+            threshold: 5 
+            
 imputation:
     method: "avg"
 

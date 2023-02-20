@@ -21,22 +21,14 @@ def load_config(path):
 
     return config
 
-
-def main():
-    config = load_config(config_path)
-
-    #Load data
-    file_path = config['data']['input']
-    df = pd.read_csv(file_path)
-
-    #Drop column "ID4Sasan"
-    if "ID4Sasan" in df.columns:
-        df.drop("ID4Sasan", axis=1, inplace=True)
-    
-    #Split data
-    test_size, random_state = itemgetter('test_size', 'random_state')(config["split"])
-    train, test = train_test_split(df, test_size=test_size, random_state=random_state)
-
+def pipeline(train, test, config):
+    """
+    Control the pre-processing of the data.
+    :param train: training data
+    :param test: test data
+    :param config: config file
+    :return: pre-processed train and test data
+    """
     #Remove outliers
     train, test = outlier_removal.router(train, test, config['outlier_removal'])
 
@@ -51,6 +43,31 @@ def main():
 
     #Feature selection
     train, test = feature_selection.router(train, test, config['feature_selection'])
+
+    return train, test
+
+
+def main():
+    """
+    Run with a config file defining data split and method etc
+    Writes split, pre-processed data to files
+    """
+    config = load_config(config_path)
+
+    #Load data
+    file_path = config['data']['input']
+    df = pd.read_csv(file_path)
+
+    #Drop column "ID4Sasan"
+    if "ID4Sasan" in df.columns:
+        df.drop("ID4Sasan", axis=1, inplace=True)
+    
+    #Split data
+    test_size, random_state = itemgetter('test_size', 'random_state')(config["split"])
+    train, test = train_test_split(df, test_size=test_size, random_state=random_state)
+
+    #Pre-process data
+    train, test = pipeline(train, test, config)
 
     #Output data
     if config["data"]["output"] is not None:

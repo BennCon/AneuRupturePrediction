@@ -1,4 +1,6 @@
 import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectFromModel
 
 def router(train, test, config):
     method = config['method']
@@ -10,7 +12,10 @@ def router(train, test, config):
             retain_cols = method_config['features']
         elif method == 'correlation':
             retain_cols = corr_select(train, method_config['threshold'])
+        elif method == 'random_forest':
+            retain_cols = random_forest_select(train)
         
+    # print(f"Retaining {len(retain_cols)} features from {len(train.columns)}")
     return train[retain_cols], test[retain_cols]
 
 
@@ -27,3 +32,20 @@ def corr_select(df, threshold):
     return [col for col in df.columns if col not in to_drop]
 
 
+def random_forest_select(train):
+    """
+    Select features using random forest
+    """
+    
+    X = train.drop("ruptureStatus", axis=1)
+    y = train["ruptureStatus"]
+
+    clf = RandomForestClassifier(n_estimators=50, random_state=0, n_jobs=-1)
+    clf.fit(X, y)
+    model = SelectFromModel(clf, prefit=True)
+
+    selected_features = X.columns[(model.get_support())]
+    
+    #Add target back
+    selected_features = np.append(selected_features, "ruptureStatus")
+    return selected_features

@@ -20,6 +20,27 @@ def load_config(path):
 
     return config
 
+def pipeline(train, config):
+    """
+    Trains the selected model.
+    :param train: training data
+    :param config: config file
+    :return: trained model
+    """
+    x_train, y_train = train.drop('ruptureStatus', axis=1), train['ruptureStatus']
+
+    #Train model
+    classifier = config['classifier']
+    params = config['classifiers'][classifier]
+
+    if classifier == 'kNN':
+        model = knn.train(x_train, y_train, params)
+    elif classifier == 'logisticRegression':
+        model = lr.train(x_train, y_train, params)
+    
+    return model
+
+
 def main():
     config = load_config(config_path)
 
