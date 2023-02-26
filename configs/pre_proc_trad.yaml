@@ -14,7 +14,7 @@ outlier_removal:
             threshold: 5
 
 imputation:
-    method: "complete_case"
+    method: "avg"
 
 encoding:
     one_hot_cols: [PHASES_Population, PHASES_Location, FullLocation]

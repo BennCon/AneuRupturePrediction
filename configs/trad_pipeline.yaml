@@ -2,5 +2,9 @@ data: data/aneurist_trad.csv
 pre_process_config: configs/pre_proc_trad.yaml
 classifier_config: configs/classify_trad.yaml
 
-loo: True
-kfold: 5
+
+eval: loo #kfold, loo, split 
+metric: [accuracy] #accuracy, auc 
+
+split: 0.2
+kfold: 10

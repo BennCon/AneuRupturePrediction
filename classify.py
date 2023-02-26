@@ -10,6 +10,7 @@ from sklearn.metrics import accuracy_score as accuracy
 
 import classifiers.knn as knn
 import classifiers.logisticRegression as lr
+import classifiers.mlp as mlp
 
 #Load config file path from command line
 config_path = sys.argv[1]
@@ -37,6 +38,8 @@ def pipeline(train, config):
         model = knn.train(x_train, y_train, params)
     elif classifier == 'logisticRegression':
         model = lr.train(x_train, y_train, params)
+    elif classifier == 'mlp':
+        model = mlp.train(x_train, y_train, params)
     
     return model
 

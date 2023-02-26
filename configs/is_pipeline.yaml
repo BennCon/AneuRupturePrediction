@@ -2,5 +2,8 @@ data: data/aneurist_is.csv
 pre_process_config: configs/pre_proc_is.yaml
 classifier_config: configs/classify_is.yaml
 
-loo: True
-kfold: 5
+eval: loo #kfold, loo, split 
+metric: [accuracy, auc] #accuracy, auc 
+
+split: 0.2
+kfold: 10

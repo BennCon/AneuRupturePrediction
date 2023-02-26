@@ -4,7 +4,7 @@ data:
     test: data/output/aneurist_trad_test.csv
   output: data/output/aneurist_trad_classify.csv
 
-classifier: logisticRegression
+classifier: mlp
 
 classifiers:
   kNN:
@@ -13,4 +13,7 @@ classifiers:
     C: 3
     max_iter: 1000
     solver: liblinear
+  mlp:
+    hidden_layer_sizes: 100
+    max_iter: 1000
 

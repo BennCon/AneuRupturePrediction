@@ -3,9 +3,12 @@ This controls the pipeline of the project.
 And allows use of cross validation.
 """
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import train_test_split 
 import yaml
 import sys
 import pandas as pd
+import numpy as np
 
 import pre_process as pre_process
 import pre_process_scripts.impute as impute
@@ -13,6 +16,7 @@ import classify as classify
 
 import classifiers.knn as knn
 import classifiers.logisticRegression as lr
+import classifiers.mlp as mlp
 
 #Load config file path from command line
 config_path = sys.argv[1]
@@ -24,10 +28,7 @@ def load_config(path):
     return config
 
 def pred(model, x_test, classifier):
-    if classifier == 'kNN':
-        y_pred = knn.classify(model, x_test)
-    elif classifier == 'logisticRegression':
-        y_pred = lr.classify(model, x_test)
+    y_pred = model.predict(x_test)
 
     return y_pred
 
@@ -44,35 +45,19 @@ def main():
     pre_process_config_path = config['pre_process_config']
     pre_process_config = load_config(pre_process_config_path)
 
-    #If imputation is set to complete_case, then we need to do that before splitting into folds 
+    #If imputation is set to complete_case, need to do that before splitting into folds 
     if pre_process_config['imputation']['method'] == 'complete_case':
         df = impute.complete_case(df)
 
-    #K fold cross validation
-    if config["loo"]:
-        k = len(df)
-    else:
-        k = config['kfold']
-    fold_size = int(len(df)/k)
-    folds = [df[i*fold_size:(i+1)*fold_size] for i in range(k)]
-    
-    #Loop through the folds - each time using pre_process.pipeline passing train and test
+    #Gets evalution method and metrics from config file
+    eval = config['eval']
+    metrics = config['metric']
+
     accs = []
-    for i in range(k):
-        train = pd.concat([folds[j] for j in range(k) if j != i])
-        test = folds[i]
-
-        #Convert train and test so they are not slices of the original data frame
-        train = pd.DataFrame(train)
-        test = pd.DataFrame(test)
-
-        #Progress bar for each fold that automatically updates in the terminal
-        print(f"Fold {i+1}/{k}", end="\r")
-        #Format it as a bar chart with a percentage
-        print(f"Fold {i+1}/{k} [{'='*int((i+1)/k*20)}{' '*(20-int((i+1)/k*20))}] {int((i+1)/k*100)}%", end="\r")
-
+    aucs = []
+    if eval == 'split':
+        train, test = train_test_split(df, test_size=config['split'])
         train, test = pre_process.pipeline(train, test, pre_process_config)
-
 
         #Train model
         classifier_config_path = config['classifier_config']
@@ -83,14 +68,71 @@ def main():
         x_test, y_test = test.drop('ruptureStatus', axis=1), test['ruptureStatus']
         y_pred = pred(model, x_test, classifier_config['classifier'])
 
-        #Accuracy
         acc = accuracy_score(y_test, y_pred)
         accs.append(acc)
+
+        roc_auc = roc_auc_score(y_test, y_pred)
+        aucs.append(roc_auc)
+
+    else: 
+        
+        if eval == 'loo': #(leave one out)
+            k = len(df)
+        elif eval == 'kfold':
+            k = config['kfold']
+
+        fold_size = int(len(df)/k)
+        folds = [df[i*fold_size:(i+1)*fold_size] for i in range(k)]
+
+        if eval != 'loo':
+            #If not every fold has both classes, shuffle again and split into folds
+            while not all([len(folds[i][folds[i]['ruptureStatus'] == 'Ruptured']) > 0 and len(folds[i][folds[i]['ruptureStatus'] == 'Unruptured']) > 0 for i in range(k)]):
+                df = df.sample(frac=1).reset_index(drop=True)
+                folds = [df[i*fold_size:(i+1)*fold_size] for i in range(k)]
+            
+
+        accs = [] #Accuracies for each fold
+        aucs = [] #Array of areas under the curve for each fold
+        for i in range(k):
+            train = pd.concat([folds[j] for j in range(k) if j != i])
+            test = folds[i]
+
+            #Convert train and test so they are not slices of the original data frame
+            train = pd.DataFrame(train)
+            test = pd.DataFrame(test)
+
+            #Progress bar for each fold that automatically updates in the terminal
+            print(f"Fold {i+1}/{k}", end="\r")
+            #Format it as a bar chart with a percentage
+            print(f"Fold {i+1}/{k} [{'='*int((i+1)/k*20)}{' '*(20-int((i+1)/k*20))}] {int((i+1)/k*100)}%", end="\r")
+
+            train, test = pre_process.pipeline(train, test, pre_process_config)
+
+            #Train model
+            classifier_config_path = config['classifier_config']
+            classifier_config = load_config(classifier_config_path)
+            model = classify.pipeline(train, classifier_config)
+
+            #Classify test data
+            x_test, y_test = test.drop('ruptureStatus', axis=1), test['ruptureStatus']
+            y_pred = pred(model, x_test, classifier_config['classifier'])
+
+            #Accuracy
+            acc = accuracy_score(y_test, y_pred)
+            accs.append(acc)
+
+            #AUC
+            if eval != 'loo':
+                roc_auc = roc_auc_score(y_test, y_pred)
+                aucs.append(roc_auc)
 
         
 
     print("\n")
-    print("Accuracy: {}".format(sum(accs)/len(accs)))
+    if 'accuracy' in metrics:
+        print("Accuracy: {}".format(sum(accs)/len(accs)))
+    if 'auc' in metrics and eval != 'loo':
+        print("AUC: {}".format(sum(aucs)/len(aucs)))
 
 if __name__ == '__main__':
     main()
