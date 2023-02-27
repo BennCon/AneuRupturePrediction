@@ -8,7 +8,9 @@ def train(x_train, y_train, params):
     """
     Train a multi-layer perceptron classifier.
     """
-    mlp = MLPClassifier()
+    max_iter = params['max_iter']
+    hidden_layer_sizes = params['hidden_layer_sizes']
+    mlp = MLPClassifier(max_iter=max_iter, hidden_layer_sizes=hidden_layer_sizes)
     mlp.fit(x_train, y_train)
 
     return mlp

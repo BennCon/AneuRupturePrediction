@@ -1,19 +1,19 @@
 data:
   input:
-    train: data/output/aneurist_trad_train.csv
-    test: data/output/aneurist_trad_test.csv
-  output: data/output/aneurist_trad_classify.csv
+    train: data/output/train_trad.csv
+    test: data/output/val_trad.csv
+  output: data/output/val_trad_classify.csv
 
-classifier: mlp
+classifier: logisticRegression
 
 classifiers:
   kNN:
-    k: 3
+    k: 5
   logisticRegression:
-    C: 3
+    C: 10
     max_iter: 1000
     solver: liblinear
   mlp:
-    hidden_layer_sizes: 100
-    max_iter: 1000
+    hidden_layer_sizes: 25
+    max_iter: 500
 

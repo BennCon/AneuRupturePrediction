@@ -1,14 +1,14 @@
 data:
-    input: data/aneurist_trad.csv
+    input: data/train_trad.csv
     output:
-        train: data/output/aneurist_trad_train.csv
-        test: data/output/aneurist_trad_test.csv
+        train: data/output/train_trad.csv
+        test: data/output/val_trad.csv
 split:
     test_size: 0.2
     random_state: 42
 
 outlier_removal:
-    method:
+    method: z_score
     methods:
         z_score:
             threshold: 5
@@ -24,10 +24,14 @@ encoding:
         ruptureStatus: ["Unruptured", "Ruptured"]
 
 feature_selection:
-    method: "correlation"
+    method: correlation
     methods:
         manual:
             features: [PHASES_Population, Hypertension, Smoking, Age, Size, EarlierSAH, PHASES_Location, ruptureStatus,Gender]
         correlation:
-            threshold: 0.45
+            threshold: 0.5
+        random_forest:
+            n_estimators: 500 
+            random_state: 0
+            n_jobs: -1
 

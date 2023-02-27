@@ -1,10 +1,10 @@
-data: data/aneurist_trad.csv
+data: data/train_trad.csv
 pre_process_config: configs/pre_proc_trad.yaml
 classifier_config: configs/classify_trad.yaml
 
 
-eval: loo #kfold, loo, split 
-metric: [accuracy] #accuracy, auc 
+eval: kfold #kfold, loo, split 
+metric: [accuracy, auc] #accuracy, auc 
 
 split: 0.2
-kfold: 10
+kfold: 5

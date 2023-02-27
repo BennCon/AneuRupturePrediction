@@ -1,8 +1,8 @@
 data:
   input:
-    train: data/output/aneurist_is_train.csv
-    test: data/output/aneurist_is_test.csv
-  output: data/output/aneurist_is_classify.csv
+    train: data/output/train_is.csv
+    test: data/output/val_is.csv
+  output: data/output/val_is_classify.csv
 
 classifier: logisticRegression
 
@@ -13,4 +13,7 @@ classifiers:
     C: 3
     max_iter: 1000
     solver: liblinear
+  mlp:
+    hidden_layer_sizes: 100
+    max_iter: 500
 

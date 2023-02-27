@@ -13,7 +13,7 @@ def router(train, test, config):
         elif method == 'correlation':
             retain_cols = corr_select(train, method_config['threshold'])
         elif method == 'random_forest':
-            retain_cols = random_forest_select(train)
+            retain_cols = random_forest_select(train, method_config)
         
     # print(f"Retaining {len(retain_cols)} features from {len(train.columns)}")
     return train[retain_cols], test[retain_cols]
@@ -32,15 +32,16 @@ def corr_select(df, threshold):
     return [col for col in df.columns if col not in to_drop]
 
 
-def random_forest_select(train):
+def random_forest_select(train, config):
     """
     Select features using random forest
     """
-    
+    n_estimators, random_state, n_jobs = config['n_estimators'], config['random_state'], config['n_jobs']
+
     X = train.drop("ruptureStatus", axis=1)
     y = train["ruptureStatus"]
 
-    clf = RandomForestClassifier(n_estimators=50, random_state=0, n_jobs=-1)
+    clf = RandomForestClassifier(n_estimators=n_estimators, random_state=random_state, n_jobs=n_jobs)
     clf.fit(X, y)
     model = SelectFromModel(clf, prefit=True)
 
