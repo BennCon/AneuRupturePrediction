@@ -8,13 +8,13 @@ split:
     random_state: 42
 
 outlier_removal:
-    method: "z_score"
+    method: z_score
     methods:
         z_score:
-            threshold: 5 
+            threshold: 3
             
 imputation:
-    method: "avg"
+    method: avg #Setting this to complete case may cause issues with kfold, as IS data is very small
 
 encoding:
     one_hot_cols: [PHASES_Population, PHASES_Location, patEthnicityRAW, LocationDDS, 
@@ -28,10 +28,14 @@ encoding:
         FlowStabilityCOMPUTED: [unstable, stable]
 
 feature_selection:
-    method: "correlation"
+    method: correlation
     methods:
         manual:
             features: [PHASES_Population, Hypertension, Smoking, Age, Size, EarlierSAH, PHASES_Location, ruptureStatus,Gender]
         correlation:
-            threshold: 0.45
+            threshold: 3
+        random_forest:
+            n_estimators: 500 
+            random_state: 0
+            n_jobs: -1
 

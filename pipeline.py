@@ -69,8 +69,8 @@ def main():
         #If not every fold has both classes, shuffle again and split into folds
         while not all([len(folds[i][folds[i]['ruptureStatus'] == 'Ruptured']) > 0 and len(folds[i][folds[i]['ruptureStatus'] == 'Unruptured']) > 0 for i in range(k)]):
             df = df.sample(frac=1).reset_index(drop=True)
-            folds = [df[i*fold_size:(i+1)*fold_size] for i in range(k)]
-        
+            folds = [df[i*fold_size:(i+1)*fold_size] for i in range(k)]    
+
 
     accs = [] #Accuracies for each fold
     aucs = [] #Array of areas under the curve for each fold
@@ -79,8 +79,8 @@ def main():
     preds = []
     true = []
     for i in range(k):
-        train = pd.concat([folds[j] for j in range(k) if j != i])
-        test = folds[i]
+        train = pd.concat([folds[j] for j in range(k) if j != i]).copy()
+        test = folds[i].copy()
 
         #Convert train and test so they are not slices of the original data frame
         train = pd.DataFrame(train)

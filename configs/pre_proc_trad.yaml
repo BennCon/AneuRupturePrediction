@@ -8,13 +8,13 @@ split:
     random_state: 42
 
 outlier_removal:
-    method: z_score
+    method: 
     methods:
         z_score:
             threshold: 5
 
 imputation:
-    method: "avg"
+    method: complete_case
 
 encoding:
     one_hot_cols: [PHASES_Population, PHASES_Location, FullLocation]
@@ -29,7 +29,7 @@ feature_selection:
         manual:
             features: [PHASES_Population, Hypertension, Smoking, Age, Size, EarlierSAH, PHASES_Location, ruptureStatus,Gender]
         correlation:
-            threshold: 0.5
+            threshold: 0.7
         random_forest:
             n_estimators: 500 
             random_state: 0

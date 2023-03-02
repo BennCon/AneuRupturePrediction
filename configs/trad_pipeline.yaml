@@ -7,4 +7,4 @@ eval: kfold #kfold, loo, split
 metric: [accuracy, auc] #accuracy, auc 
 
 split: 0.2
-kfold: 5
+kfold: 20

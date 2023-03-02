@@ -2,8 +2,8 @@ data: data/train_is.csv
 pre_process_config: configs/pre_proc_is.yaml
 classifier_config: configs/classify_is.yaml
 
-eval: loo #kfold, loo, split 
+eval: kfold #kfold, loo, split 
 metric: [accuracy, auc] #accuracy, auc 
 
 split: 0.2
-kfold: 10
+kfold: 15
