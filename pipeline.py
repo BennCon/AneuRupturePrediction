@@ -74,6 +74,7 @@ def main():
 
     accs = [] #Accuracies for each fold
     aucs = [] #Array of areas under the curve for each fold
+    phases_auc = []
 
     #AUC for leave one out - i.e. record tpr and fpr for each record
     preds = []
@@ -91,7 +92,17 @@ def main():
         #Format it as a bar chart with a percentage
         print(f"Fold {i+1}/{k} [{'='*int((i+1)/k*20)}{' '*(20-int((i+1)/k*20))}] {int((i+1)/k*100)}%", end="\r")
 
-        train, test = pre_process.pipeline(train, test, pre_process_config)
+        get_phases = True
+        if get_phases:
+            train, test, phases = pre_process.pipeline(train, test, pre_process_config, ret_phases=get_phases)
+            phases_pred = []
+            for i in phases:
+                if i > 4:
+                    phases_pred.append(1)
+                else: 
+                    phases_pred.append(0)
+        else:
+            train, test = pre_process.pipeline(train, test, pre_process_config)
 
         #Train model
         classifier_config_path = config['classifier_config']
@@ -101,14 +112,14 @@ def main():
         #Classify test data
         x_test, y_test = test.drop('ruptureStatus', axis=1), test['ruptureStatus']
         y_pred = pred(model, x_test, classifier_config['classifier'])
-
+        
         if eval == 'loo':
             preds.append(y_pred)
             true.append(y_test)
         else:
             accs.append(accuracy_score(y_test, y_pred))
             aucs.append(roc_auc_score(y_test, y_pred))
-
+            phases_auc.append(roc_auc_score(y_test, phases_pred))
 
     
     print("\n")
@@ -119,6 +130,7 @@ def main():
     else:
         print(f"Accuracy: {np.mean(accs)}")
         print(f"AUC: {np.mean(aucs)}")
+        print(f"Phases AUC: {np.mean(phases_auc)}")
         print(f"S.d. of accuracy: {np.std(accs)}")
         print(f"S.d. of AUC: {np.std(aucs)}")
         

@@ -11,6 +11,7 @@ import pre_process_scripts.encode as encode
 import pre_process_scripts.impute as impute
 import pre_process_scripts.outlier_removal as outlier_removal
 import pre_process_scripts.feature_selection as feature_selection
+import phases as phases
 
 #Load config file path from command line
 config_path = sys.argv[1]
@@ -21,7 +22,7 @@ def load_config(path):
 
     return config
 
-def pipeline(train, test, config):
+def pipeline(train, test, config, ret_phases=False):
     """
     Control the pre-processing of the data.
     :param train: training data
@@ -35,6 +36,13 @@ def pipeline(train, test, config):
     #Imputation
     train, test = impute.router(train, test, config['imputation'])
 
+    scores =[]
+    if ret_phases:
+        #for each row in test
+        for i in range(len(test)):
+            row = test.iloc[i]
+            scores.append(phases.construct(row))
+
     #Encode
     one_hot_cols, orders = itemgetter('one_hot_cols', 'orders')(config['encoding'])
     train = encode.encode(train, one_hot_cols, orders)
@@ -44,7 +52,7 @@ def pipeline(train, test, config):
     #Feature selection
     train, test = feature_selection.router(train, test, config['feature_selection'])
 
-    return train, test
+    return train, test, scores
 
 
 def main():
