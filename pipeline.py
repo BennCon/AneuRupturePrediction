@@ -4,7 +4,6 @@ And allows use of cross validation.
 """
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import train_test_split 
 import yaml
 import sys
 import pandas as pd
@@ -49,9 +48,8 @@ def main():
     if pre_process_config['imputation']['method'] == 'complete_case':
         df = impute.complete_case(df)
 
-    #Gets evalution method and metrics from config file
+    #Gets evalution from config file
     eval = config['eval']
-    metrics = config['metric']
 
     accs = []
     aucs = []
@@ -63,6 +61,7 @@ def main():
         df = df.sample(frac=1).reset_index(drop=True)
 
     fold_size = int(len(df)/k)
+    print(f"Fold size: {fold_size}")
     folds = [df[i*fold_size:(i+1)*fold_size] for i in range(k)]
 
     if eval != 'loo':
@@ -79,6 +78,8 @@ def main():
     #AUC for leave one out - i.e. record tpr and fpr for each record
     preds = []
     true = []
+
+    get_phases = False
     for i in range(k):
         train = pd.concat([folds[j] for j in range(k) if j != i]).copy()
         test = folds[i].copy()
@@ -92,17 +93,19 @@ def main():
         #Format it as a bar chart with a percentage
         print(f"Fold {i+1}/{k} [{'='*int((i+1)/k*20)}{' '*(20-int((i+1)/k*20))}] {int((i+1)/k*100)}%", end="\r")
 
-        get_phases = True
         if get_phases:
             train, test, phases = pre_process.pipeline(train, test, pre_process_config, ret_phases=get_phases)
             phases_pred = []
             for i in phases:
                 if i > 4:
                     phases_pred.append(1)
-                else: 
+                else:   
                     phases_pred.append(0)
         else:
-            train, test = pre_process.pipeline(train, test, pre_process_config)
+            pre_proc_data  = pre_process.construct_process(train, pre_process_config)
+            train = pre_process.apply_process(train, pre_proc_data)
+            test = pre_process.apply_process(test, pre_proc_data)
+
 
         #Train model
         classifier_config_path = config['classifier_config']
@@ -119,7 +122,7 @@ def main():
         else:
             accs.append(accuracy_score(y_test, y_pred))
             aucs.append(roc_auc_score(y_test, y_pred))
-            phases_auc.append(roc_auc_score(y_test, phases_pred))
+            # phases_auc.append(roc_auc_score(y_test, phases_pred))
 
     
     print("\n")
@@ -130,7 +133,7 @@ def main():
     else:
         print(f"Accuracy: {np.mean(accs)}")
         print(f"AUC: {np.mean(aucs)}")
-        print(f"Phases AUC: {np.mean(phases_auc)}")
+        # print(f"Phases AUC: {np.mean(phases_auc)}")
         print(f"S.d. of accuracy: {np.std(accs)}")
         print(f"S.d. of AUC: {np.std(aucs)}")
         

@@ -22,7 +22,53 @@ def load_config(path):
 
     return config
 
-def pipeline(train, test, config, ret_phases=False):
+def construct_process(train, config):
+    """
+    Given training data, create the transformations to be applied to both train and test
+    :param train: training data
+    :param config: config file
+    """
+    #Outlier Removal
+    outlier_removal_data = outlier_removal.generate(train, config['outlier_removal'])
+    train_copy = outlier_removal.apply(train, outlier_removal_data)
+
+
+    #Encoding
+    one_hot_cols, orders = itemgetter('one_hot_cols', 'orders')(config['encoding'])
+    encoding_data = {'one_hot_cols': one_hot_cols, 'orders': orders}
+    train_copy = encode.encode(train_copy, one_hot_cols, orders)
+    #Imputation
+    imputation_data = impute.generate(train_copy, config['imputation'])
+    train_copy = impute.apply(train_copy, imputation_data)
+
+    #Feature Selection
+    retain_cols = feature_selection.router(train_copy, config['feature_selection'])
+    # print(f"Retained {len(retain_cols)} features")
+
+    return {
+        'outlier_removal': outlier_removal_data,
+        'imputation': imputation_data,
+        'encoding': encoding_data,
+        'feature_selection': retain_cols
+    }
+
+def apply_process(df, data):
+    df = outlier_removal.apply(df, data['outlier_removal'])
+    df = encode.encode(df, data["encoding"]["one_hot_cols"], data["encoding"]["orders"])
+    df = impute.apply(df, data['imputation'])
+
+    #Encode
+
+    #Feature Selection
+    for i in data["feature_selection"]:
+        if i not in df.columns:
+            df[i] = 0
+    df = df[data["feature_selection"]]
+
+    return df
+
+
+def pipeline(train, config, test=None, ret_phases=False):
     """
     Control the pre-processing of the data.
     :param train: training data
@@ -31,12 +77,18 @@ def pipeline(train, test, config, ret_phases=False):
     :return: pre-processed train and test data
     """
     #Remove outliers
-    train, test = outlier_removal.router(train, test, config['outlier_removal'])
+    if test is not None:
+        train, test = outlier_removal.generate(train, config['outlier_removal'], test)
+    else:
+        train = outlier_removal.generate(train, config['outlier_removal'])[0]
 
     #Imputation
-    train, test = impute.router(train, test, config['imputation'])
+    if test is not None:
+        train, test = impute.generate(train, config['imputation'], test)
+    else:
+        train = impute.generate(train, config['imputation'])[0]
 
-    scores =[]
+    scores = []
     if ret_phases:
         #for each row in test
         for i in range(len(test)):
@@ -46,11 +98,15 @@ def pipeline(train, test, config, ret_phases=False):
     #Encode
     one_hot_cols, orders = itemgetter('one_hot_cols', 'orders')(config['encoding'])
     train = encode.encode(train, one_hot_cols, orders)
-    test = encode.encode(test, one_hot_cols, orders)
-    train, test = encode.onehot_align(train, test)
+    if test is not None:
+        test = encode.encode(test, one_hot_cols, orders)
+        train, test = encode.onehot_align(train, test)
 
     #Feature selection
-    train, test = feature_selection.router(train, test, config['feature_selection'])
+    if test is not None:
+        train, test = feature_selection.router(train, config['feature_selection'], test)
+    else:
+        train = feature_selection.router(train, config['feature_selection'])[0]
 
     return train, test, scores
 
